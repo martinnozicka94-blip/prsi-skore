@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prší Skóre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Nunito+Sans:wght@400;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#0b3d2e;
+  --surface:#124a37;
+  --surface-2:#163f31;
+  --fg:#f3ead2;
+  --muted:#9fc2ad;
+  --accent:#d8ae4f;
+  --accent-ink:#2b2008;
+  --second:#8aa98f;
+  --danger:#c0564a;
+  --border:#2a5c47;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#eef2ea; --surface:#ffffff; --surface-2:#f6f1e2; --fg:#17301f;
+    --muted:#5a7363; --accent:#b4842a; --accent-ink:#2b2008; --second:#3f6b4a;
+    --danger:#a23f33; --border:#d8e0d2; color-scheme: light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#eef2ea; --surface:#ffffff; --surface-2:#f6f1e2; --fg:#17301f;
+  --muted:#5a7363; --accent:#b4842a; --accent-ink:#2b2008; --second:#3f6b4a;
+  --danger:#a23f33; --border:#d8e0d2; color-scheme: light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:'Nunito Sans', ui-sans-serif, system-ui, sans-serif;
+}
+.page{
+  max-width:560px;
+  margin:0 auto;
+  padding-inline:20px;
+  padding-block:28px 40px;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+h1,h2{font-family:'Fraunces', Georgia, serif; margin:0; text-wrap:balance}
+.brand{display:flex; align-items:baseline; gap:10px; justify-content:center}
+.brand h1{font-size:2.1rem; font-weight:700; letter-spacing:.01em}
+.suits{display:flex; justify-content:center; gap:12px; font-size:1.1rem; color:var(--accent); letter-spacing:.3em; margin-top:-6px}
+.suits span:nth-child(2),.suits span:nth-child(4){color:var(--danger)}
+.card{background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:20px}
+.field-label{font-weight:800; font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; display:block}
+.count-toggle{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.count-toggle button{font-family:'Fraunces', Georgia, serif; font-size:1.3rem; font-weight:600; padding:16px 10px; border-radius:14px; border:1px solid var(--border); background:var(--surface-2); color:var(--fg); cursor:pointer}
+.count-toggle button.active{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.preset-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+.preset-btn{font:inherit; font-weight:700; font-size:.9rem; padding:9px 14px; border-radius:999px; border:1px solid var(--border); background:var(--surface-2); color:var(--fg); cursor:pointer}
+.preset-btn.ghost{color:var(--muted); border-style:dashed}
+.name-rows{display:flex; flex-direction:column; gap:10px; margin-top:16px}
+.name-rows input{width:100%; font:inherit; font-size:1.05rem; padding:13px 14px; border-radius:12px; border:1px solid var(--border); background:var(--surface-2); color:var(--fg)}
+.name-rows input::placeholder{color:var(--muted)}
+.name-rows input:focus{outline:2px solid var(--accent); outline-offset:1px}
+.rule-note{font-size:.88rem; color:var(--muted); line-height:1.5; margin-top:14px}
+.btn-primary{font-family:'Fraunces', Georgia, serif; font-size:1.15rem; font-weight:700; padding:16px; width:100%; border-radius:14px; border:none; background:var(--accent); color:var(--accent-ink); cursor:pointer}
+.btn-primary:disabled{opacity:.45; cursor:not-allowed}
+.setup-links{display:flex; justify-content:center}
+.session-bar{display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:.85rem; color:var(--muted)}
+.session-bar b{color:var(--fg)}
+.link-btn{background:none; border:none; color:var(--muted); font:inherit; font-size:.85rem; text-decoration:underline; text-underline-offset:3px; cursor:pointer; padding:4px}
+.players{display:flex; flex-direction:column; gap:14px}
+.player{background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px 20px; display:flex; flex-direction:column; gap:14px}
+.player-top{display:flex; align-items:center; justify-content:space-between; gap:10px; min-width:0}
+.player-name{font-family:'Fraunces', Georgia, serif; font-weight:600; font-size:1.15rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0}
+.player-score{font-family:'Fraunces', Georgia, serif; font-weight:700; font-size:2.1rem; font-variant-numeric:tabular-nums; color:var(--accent); line-height:1}
+.player-actions{display:grid; gap:10px}
+.player-actions.two-up{grid-template-columns:1fr 1fr}
+.score-btn{font:inherit; font-weight:800; font-size:1rem; padding:14px 8px; border-radius:12px; border:1px solid var(--border); background:var(--surface-2); color:var(--fg); cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; line-height:1.2}
+.score-btn .pts{font-family:'Fraunces', Georgia, serif; font-size:1.05rem}
+.score-btn.win{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.score-btn.second{background:var(--second); color:var(--accent-ink); border-color:var(--second)}
+.score-btn:active{transform:translateY(1px)}
+.footer-row{display:flex; gap:10px; margin-top:4px}
+.btn-ghost{flex:1; font:inherit; font-weight:700; padding:13px; border-radius:12px; border:1px solid var(--border); background:var(--surface-2); color:var(--fg); cursor:pointer}
+.btn-ghost:disabled{opacity:.4; cursor:not-allowed}
+.btn-ghost.danger{color:var(--danger); border-color:var(--danger)}
+.confirm-panel{background:var(--surface); border:1px solid var(--danger); border-radius:18px; padding:18px 20px; display:flex; flex-direction:column; gap:12px}
+.confirm-panel p{margin:0; font-size:.95rem; line-height:1.5}
+.confirm-panel .row{display:flex; gap:10px}
+.confirm-panel button{flex:1; font:inherit; font-weight:700; padding:12px; border-radius:12px; border:1px solid var(--border); background:var(--surface-2); color:var(--fg); cursor:pointer}
+.confirm-panel button.confirm{background:var(--danger); color:#fff; border-color:var(--danger)}
+.standings{display:flex; flex-direction:column; gap:10px}
+.standing-row{display:flex; align-items:center; gap:14px; background:var(--surface-2); border:1px solid var(--border); border-radius:14px; padding:14px 16px}
+.standing-row.winner{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+.standing-rank{font-family:'Fraunces', Georgia, serif; font-weight:700; font-size:1.2rem; color:var(--muted); width:1.4em; flex-shrink:0}
+.standing-row.winner .standing-rank{color:var(--accent-ink); opacity:.7}
+.standing-name{font-weight:700; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.standing-pill{font-size:.68rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; background:var(--accent-ink); color:var(--accent); border-radius:999px; padding:3px 9px; flex-shrink:0}
+.standing-score{font-family:'Fraunces', Georgia, serif; font-weight:700; font-size:1.4rem; font-variant-numeric:tabular-nums}
+.history-card{background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px 18px; display:flex; flex-direction:column; gap:10px}
+.history-date{font-family:'Fraunces', Georgia, serif; font-weight:600; font-size:1rem; text-transform:capitalize}
+.line-delete{flex-shrink:0; width:26px; height:26px; line-height:24px; text-align:center; padding:0; border-radius:50%; border:1px solid var(--border); background:var(--surface-2); color:var(--muted); font-size:1.1rem; cursor:pointer}
+.history-rows{display:flex; flex-direction:column; gap:6px}
+.history-line{display:flex; justify-content:space-between; gap:10px; font-size:.92rem}
+.history-line .name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0}
+.history-line.winner .name{font-weight:800; color:var(--accent)}
+.history-line .pts{font-variant-numeric:tabular-nums; font-weight:700; flex-shrink:0}
+.empty-note{color:var(--muted); font-size:.9rem; text-align:center; padding:20px 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="page" id="app"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- server-backed storage (no login — shared by anyone with the link) ----------
+
+  function apiGet(path){
+    return fetch(path).then(function(r){ if(!r.ok) throw new Error('GET ' + path + ' failed'); return r.json(); });
+  }
+  function apiSend(path, method, body){
+    return fetch(path, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body)
+    }).then(function(r){ if(!r.ok) throw new Error(method + ' ' + path + ' failed'); return r.json(); });
+  }
+
+  function fmtDate(iso){
+    try{
+      var d = new Date(iso);
+      return d.toLocaleDateString('cs-CZ', { weekday:'long', day:'numeric', month:'long' });
+    }catch(e){ return iso || ''; }
+  }
+  function fmtDateShort(iso){
+    try{
+      var d = new Date(iso);
+      return d.toLocaleDateString('cs-CZ', { day:'numeric', month:'numeric', year:'numeric' });
+    }catch(e){ return iso || ''; }
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+  function sortedStandings(players){
+    return players.map(function(p, i){ return { name:p.name, score:p.score, idx:i }; })
+      .sort(function(a,b){ return b.score - a.score; });
+  }
+
+  // local names/toggle preferences only — never game data, so these are fine to
+  // keep per-browser (no need to round-trip to the server for a UI convenience)
+  function loadLocal(key){
+    try{ var v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }catch(e){ return null; }
+  }
+  function saveLocal(key, val){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+  }
+  var NAMES_KEY_PREFIX = 'prsi_names_';
+
+  var state = null;
+  var history = [];
+  var pendingEnd = false;
+  var pendingHistoryClear = false;
+  var pendingDeleteKey = null;
+  var expandedDetailKeys = {};
+  var lastResult = null;
+  var showGame = false;
+  var syncState = 'connecting'; // 'connecting' | 'synced' | 'offline'
+  var writingState = false;
+
+  function syncLabel(){
+    if(syncState === 'synced') return 'sdíleno se všemi';
+    if(syncState === 'connecting') return 'připojuji se…';
+    return 'offline, zkouším znovu…';
+  }
+
+  function persistState(){
+    writingState = true;
+    var p = state ? apiSend('/api/state', 'PUT', state) : apiSend('/api/state', 'DELETE');
+    p.then(function(){ syncState = 'synced'; })
+     .catch(function(e){ console.error('prsi: state write failed', e); syncState = 'offline'; })
+     .then(function(){ writingState = false; });
+  }
+
+  var app = document.getElementById('app');
+
+  // ---------- rendering ----------
+
+  function render(){
+    app.innerHTML = '';
+    if(lastResult){
+      app.appendChild(renderResult());
+    } else if(state && showGame){
+      app.appendChild(renderGame());
+    } else {
+      app.appendChild(renderSetup());
+    }
+  }
+
+  function computeTotals(recs){
+    var order = [];
+    var totals = {};
+    recs.forEach(function(rec){
+      rec.players.forEach(function(p){
+        if(!(p.name in totals)){ totals[p.name] = 0; order.push(p.name); }
+        totals[p.name] += p.score;
+      });
+    });
+    return order.map(function(name){ return { name:name, total: totals[name] }; })
+      .sort(function(a,b){ return b.total - a.total; });
+  }
+
+  function sessionKey(rec){
+    return rec.id ? ('id:' + rec.id) : ('order:' + rec.order);
+  }
+
+  function deleteSessionRecord(rec){
+    if(rec.id){
+      apiSend('/api/history/' + encodeURIComponent(rec.id), 'DELETE')
+        .catch(function(e){ console.error('prsi: delete failed', e); });
+    }
+    history = history.filter(function(r){ return r !== rec; });
+    pendingDeleteKey = null;
+    render();
+  }
+
+  function renderTotalsCard(groupTitle, recs){
+    var card = document.createElement('div');
+    card.className = 'card';
+    if(!recs.length){
+      card.innerHTML =
+        '<label class="field-label">' + escapeHtml(groupTitle) + '</label>' +
+        '<div class="empty-note" style="padding:10px 0">Zatím žádná ukončená session.</div>';
+      return card;
+    }
+    var totals = computeTotals(recs);
+    var topTotal = totals.length ? totals[0].total : 0;
+    var rowsHtml = totals.map(function(t, i){
+      var isLeader = i === 0 && topTotal > 0;
+      return '<div class="standing-row' + (isLeader ? ' winner' : '') + '">' +
+        '<span class="standing-rank">' + (i+1) + '.</span>' +
+        '<span class="standing-name">' + escapeHtml(t.name) + '</span>' +
+        (isLeader ? '<span class="standing-pill">Vede</span>' : '') +
+        '<span class="standing-score">' + t.total + '</span></div>';
+    }).join('');
+    card.innerHTML =
+      '<label class="field-label">' + escapeHtml(groupTitle) + ' &middot; celkem ' + recs.length + ' session</label>' +
+      '<div class="standings" style="margin-top:10px">' + rowsHtml + '</div>';
+
+    var detailsToggle = document.createElement('button');
+    detailsToggle.type = 'button';
+    detailsToggle.className = 'link-btn';
+    detailsToggle.style.marginTop = '12px';
+    var isExpanded = !!expandedDetailKeys[groupTitle];
+    detailsToggle.textContent = isExpanded ? 'Skrýt jednotlivé zápisy' : 'Zobrazit jednotlivé zápisy';
+
+    var detailsBox = document.createElement('div');
+    detailsBox.hidden = !isExpanded;
+    detailsBox.style.marginTop = '10px';
+    detailsBox.style.display = 'flex';
+    detailsBox.style.flexDirection = 'column';
+    detailsBox.style.gap = '8px';
+
+    recs.forEach(function(rec){
+      var standings = sortedStandings(rec.players);
+      var top = standings.length ? standings[0].score : 0;
+      var key = sessionKey(rec);
+
+      var line = document.createElement('div');
+      line.className = 'history-card';
+
+      var headerRow = document.createElement('div');
+      headerRow.style.display = 'flex';
+      headerRow.style.justifyContent = 'space-between';
+      headerRow.style.alignItems = 'center';
+      headerRow.style.gap = '10px';
+
+      var dateEl = document.createElement('div');
+      dateEl.className = 'history-date';
+      dateEl.textContent = rec.label ? rec.label : fmtDateShort(rec.startedAt);
+      headerRow.appendChild(dateEl);
+
+      if(pendingDeleteKey === key){
+        var confirmWrap = document.createElement('div');
+        confirmWrap.style.display = 'flex';
+        confirmWrap.style.gap = '6px';
+        var yesBtn = document.createElement('button');
+        yesBtn.type = 'button';
+        yesBtn.className = 'preset-btn';
+        yesBtn.style.color = 'var(--danger)';
+        yesBtn.style.borderColor = 'var(--danger)';
+        yesBtn.textContent = 'Smazat';
+        yesBtn.addEventListener('click', function(){ deleteSessionRecord(rec); });
+        var noBtn = document.createElement('button');
+        noBtn.type = 'button';
+        noBtn.className = 'preset-btn ghost';
+        noBtn.textContent = 'Zrušit';
+        noBtn.addEventListener('click', function(){ pendingDeleteKey = null; render(); });
+        confirmWrap.appendChild(yesBtn);
+        confirmWrap.appendChild(noBtn);
+        headerRow.appendChild(confirmWrap);
+      } else {
+        var delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'line-delete';
+        delBtn.setAttribute('aria-label', 'Smazat zápis');
+        delBtn.textContent = '×';
+        delBtn.addEventListener('click', function(){ pendingDeleteKey = key; render(); });
+        headerRow.appendChild(delBtn);
+      }
+
+      line.appendChild(headerRow);
+
+      var rowsWrap = document.createElement('div');
+      rowsWrap.className = 'history-rows';
+      rowsWrap.innerHTML = standings.map(function(p){
+        var isWinner = p.score === top && top > 0;
+        return '<div class="history-line' + (isWinner ? ' winner' : '') + '">' +
+          '<span class="name">' + escapeHtml(p.name) + '</span>' +
+          '<span class="pts">' + p.score + '</span></div>';
+      }).join('');
+      line.appendChild(rowsWrap);
+
+      detailsBox.appendChild(line);
+    });
+
+    detailsToggle.addEventListener('click', function(){
+      var next = detailsBox.hidden;
+      detailsBox.hidden = !next;
+      expandedDetailKeys[groupTitle] = next;
+      detailsToggle.textContent = next ? 'Skrýt jednotlivé zápisy' : 'Zobrazit jednotlivé zápisy';
+    });
+    card.appendChild(detailsToggle);
+    card.appendChild(detailsBox);
+
+    return card;
+  }
+
+  function renderSetup(){
+    var wrap = document.createElement('div');
+    wrap.style.display = 'flex';
+    wrap.style.flexDirection = 'column';
+    wrap.style.gap = '20px';
+
+    var brand = document.createElement('div');
+    brand.innerHTML =
+      '<div class="brand"><h1>Prší</h1></div>' +
+      '<div class="suits"><span>&spades;</span><span>&hearts;</span><span>&clubs;</span><span>&diams;</span></div>';
+    wrap.appendChild(brand);
+
+    var syncNote = document.createElement('div');
+    syncNote.className = 'setup-links';
+    syncNote.innerHTML = '<span class="link-btn" style="text-decoration:none;cursor:default">' + syncLabel() + '</span>';
+    wrap.appendChild(syncNote);
+
+    if(state){
+      var resume = document.createElement('div');
+      resume.className = 'card';
+      resume.style.borderColor = 'var(--accent)';
+      var names = state.players.map(function(p){ return p.name; }).join(' × ');
+      var scoresLine = state.players.map(function(p){ return p.name + ': ' + p.score; }).join(' &middot; ');
+      resume.innerHTML =
+        '<label class="field-label">Rozehraná session</label>' +
+        '<div style="font-family:\'Fraunces\',Georgia,serif;font-weight:600;font-size:1.1rem">' + escapeHtml(names) + '</div>' +
+        '<div class="rule-note" style="margin-top:4px">' + scoresLine + '</div>' +
+        '<div style="margin-top:14px"><button class="btn-primary" id="resumeBtn">Pokračovat ve hře</button></div>';
+      wrap.appendChild(resume);
+      resume.querySelector('#resumeBtn').addEventListener('click', function(){
+        showGame = true;
+        render();
+      });
+    }
+
+    var card = document.createElement('div');
+    card.className = 'card';
+
+    var countCount = (loadLocal('prsi_last_count') || 2);
+
+    card.innerHTML =
+      '<label class="field-label">Počet hráčů</label>' +
+      '<div class="count-toggle">' +
+        '<button type="button" data-count="2">2 hráči</button>' +
+        '<button type="button" data-count="3">3 hráči</button>' +
+      '</div>' +
+      '<div class="preset-row" id="presetRow" hidden></div>' +
+      '<div class="name-rows" id="nameRows"></div>' +
+      '<div class="rule-note" id="ruleNote"></div>' +
+      '<div style="margin-top:18px"><button class="btn-primary" id="startBtn">Začít hru</button></div>';
+
+    wrap.appendChild(card);
+
+    var historyHeading = null;
+    var historySummary = null;
+    if(history.length){
+      historyHeading = document.createElement('h2');
+      historyHeading.textContent = 'Souhrnná tabulka';
+      wrap.appendChild(historyHeading);
+      historySummary = document.createElement('div');
+      historySummary.style.display = 'flex';
+      historySummary.style.flexDirection = 'column';
+      historySummary.style.gap = '14px';
+      wrap.appendChild(historySummary);
+    }
+
+    var countBtns = card.querySelectorAll('.count-toggle button');
+    var presetRow = card.querySelector('#presetRow');
+    var nameRows = card.querySelector('#nameRows');
+    var ruleNote = card.querySelector('#ruleNote');
+    var startBtn = card.querySelector('#startBtn');
+    var currentCount = countCount === 3 ? 3 : 2;
+
+    var TWO_PRESETS = [ ['Dan', 'Riči'], ['Dan', 'Noha'], ['Noha', 'Riči'] ];
+    var THREE_DEFAULT = ['Dan', 'Riči', 'Noha'];
+
+    function fillNames(names){
+      for(var i=0;i<currentCount;i++){
+        var el = document.getElementById('nameInput'+i);
+        if(el) el.value = names[i] || '';
+      }
+    }
+
+    function renderPresetRow(){
+      presetRow.innerHTML = '';
+      if(currentCount !== 2){ presetRow.hidden = true; return; }
+      presetRow.hidden = false;
+      TWO_PRESETS.forEach(function(pair){
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'preset-btn';
+        b.textContent = pair[0] + ' × ' + pair[1];
+        b.addEventListener('click', function(){ fillNames(pair); });
+        presetRow.appendChild(b);
+      });
+      var customBtn = document.createElement('button');
+      customBtn.type = 'button';
+      customBtn.className = 'preset-btn ghost';
+      customBtn.textContent = 'Jiná jména';
+      customBtn.addEventListener('click', function(){
+        fillNames(['', '']);
+        var el = document.getElementById('nameInput0');
+        if(el) el.focus();
+      });
+      presetRow.appendChild(customBtn);
+    }
+
+    function renderNameRows(){
+      var saved = loadLocal(NAMES_KEY_PREFIX + currentCount) || [];
+      if(!saved.length && currentCount === 3){ saved = THREE_DEFAULT; }
+      nameRows.innerHTML = '';
+      for(var i=0;i<currentCount;i++){
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Hráč ' + (i+1);
+        input.value = saved[i] || '';
+        input.id = 'nameInput' + i;
+        input.maxLength = 20;
+        nameRows.appendChild(input);
+      }
+      ruleNote.textContent = currentCount === 2
+        ? 'Za vyhranou hru tlačítko +1 u vítěze.'
+        : 'Za vyhranou hru +2 u vítěze, +1 u druhého. Poslední nic nedostane.';
+    }
+
+    function renderHistorySummary(){
+      if(!historySummary) return;
+      historySummary.innerHTML = '';
+      var recs = history.filter(function(r){ return r.players.length === currentCount; });
+      if(!recs.length){
+        historySummary.appendChild(renderTotalsCard(currentCount === 2 ? 'Dvojice' : 'Trojice', []));
+        return;
+      }
+      var groups = {};
+      var order = [];
+      recs.forEach(function(rec){
+        var names = rec.players.map(function(p){ return p.name; });
+        var key = names.slice().sort().join('__');
+        if(!groups[key]){ groups[key] = { names: names, recs: [] }; order.push(key); }
+        groups[key].recs.push(rec);
+      });
+      order.sort(function(a, b){ return groups[b].recs.length - groups[a].recs.length; });
+      order.forEach(function(key){
+        var g = groups[key];
+        historySummary.appendChild(renderTotalsCard(g.names.join(' × '), g.recs));
+      });
+    }
+
+    function setCount(n){
+      currentCount = n;
+      countBtns.forEach(function(b){
+        b.classList.toggle('active', Number(b.dataset.count) === n);
+      });
+      saveLocal('prsi_last_count', n);
+      renderNameRows();
+      renderPresetRow();
+      renderHistorySummary();
+    }
+
+    countBtns.forEach(function(b){
+      b.addEventListener('click', function(){ setCount(Number(b.dataset.count)); });
+    });
+    setCount(currentCount);
+
+    startBtn.addEventListener('click', function(){
+      var names = [];
+      for(var i=0;i<currentCount;i++){
+        var v = (document.getElementById('nameInput'+i).value || '').trim();
+        names.push(v || ('Hráč ' + (i+1)));
+      }
+      saveLocal(NAMES_KEY_PREFIX + currentCount, names);
+      state = {
+        startedAt: new Date().toISOString(),
+        players: names.map(function(n){ return { name:n, score:0 }; }),
+        history: []
+      };
+      persistState();
+      pendingEnd = false;
+      showGame = true;
+      render();
+    });
+
+    return wrap;
+  }
+
+  function addPoints(idx, pts){
+    state.players[idx].score += pts;
+    state.history.push({ idx: idx, pts: pts });
+    persistState();
+    render();
+  }
+
+  function undo(){
+    if(!state.history.length) return;
+    var last = state.history.pop();
+    state.players[last.idx].score -= last.pts;
+    persistState();
+    render();
+  }
+
+  function endSession(){
+    var payload = {
+      startedAt: state.startedAt,
+      endedAt: new Date().toISOString(),
+      players: state.players.map(function(p){ return { name:p.name, score:p.score }; })
+    };
+    apiSend('/api/history', 'POST', payload).then(function(res){
+      history.unshift(res.record);
+    }).catch(function(e){
+      console.error('prsi: could not save session to server', e);
+      history.unshift(Object.assign({ order: Date.now() }, payload));
+    });
+    apiSend('/api/state', 'DELETE').catch(function(e){ console.error('prsi: clear state failed', e); });
+
+    state = null;
+    showGame = false;
+    pendingEnd = false;
+    lastResult = payload;
+    render();
+  }
+
+  function renderGame(){
+    var wrap = document.createElement('div');
+    wrap.style.display = 'flex';
+    wrap.style.flexDirection = 'column';
+    wrap.style.gap = '18px';
+
+    var bar = document.createElement('div');
+    bar.className = 'session-bar';
+    var count = state.players.length;
+    bar.innerHTML =
+      '<span>Dnešní session &middot; <b>' + escapeHtml(fmtDate(state.startedAt)) + '</b></span>' +
+      '<span>' + syncLabel() + '</span>';
+    wrap.appendChild(bar);
+
+    var backRow = document.createElement('div');
+    backRow.className = 'setup-links';
+    var backLink = document.createElement('button');
+    backLink.className = 'link-btn';
+    backLink.textContent = '← Zpět na výběr';
+    backLink.addEventListener('click', function(){ showGame = false; render(); });
+    backRow.appendChild(backLink);
+    wrap.appendChild(backRow);
+
+    var list = document.createElement('div');
+    list.className = 'players';
+
+    state.players.forEach(function(p, idx){
+      var row = document.createElement('div');
+      row.className = 'player';
+
+      var top = document.createElement('div');
+      top.className = 'player-top';
+      top.innerHTML =
+        '<span class="player-name">' + escapeHtml(p.name) + '</span>' +
+        '<span class="player-score">' + p.score + '</span>';
+      row.appendChild(top);
+
+      var actions = document.createElement('div');
+      actions.className = 'player-actions' + (count === 3 ? ' two-up' : '');
+
+      if(count === 2){
+        var btn = document.createElement('button');
+        btn.className = 'score-btn win';
+        btn.innerHTML = '<span class="pts">+1</span><span>výhra</span>';
+        btn.addEventListener('click', function(){ addPoints(idx, 1); });
+        actions.appendChild(btn);
+      } else {
+        var winBtn = document.createElement('button');
+        winBtn.className = 'score-btn win';
+        winBtn.innerHTML = '<span class="pts">+2</span><span>výhra</span>';
+        winBtn.addEventListener('click', function(){ addPoints(idx, 2); });
+
+        var secondBtn = document.createElement('button');
+        secondBtn.className = 'score-btn second';
+        secondBtn.innerHTML = '<span class="pts">+1</span><span>2. místo</span>';
+        secondBtn.addEventListener('click', function(){ addPoints(idx, 1); });
+
+        actions.appendChild(winBtn);
+        actions.appendChild(secondBtn);
+      }
+
+      row.appendChild(actions);
+      list.appendChild(row);
+    });
+
+    wrap.appendChild(list);
+
+    if(pendingEnd){
+      var confirmPanel = document.createElement('div');
+      confirmPanel.className = 'confirm-panel';
+      confirmPanel.innerHTML =
+        '<p>Ukončit dnešní session? Výsledek se zapíše do historie a skóre se vynuluje.</p>' +
+        '<div class="row">' +
+          '<button id="cancelEnd">Zrušit</button>' +
+          '<button class="confirm" id="confirmEnd">Ano, ukončit</button>' +
+        '</div>';
+      wrap.appendChild(confirmPanel);
+      confirmPanel.querySelector('#cancelEnd').addEventListener('click', function(){
+        pendingEnd = false; render();
+      });
+      confirmPanel.querySelector('#confirmEnd').addEventListener('click', endSession);
+    } else {
+      var footer = document.createElement('div');
+      footer.className = 'footer-row';
+
+      var undoBtn = document.createElement('button');
+      undoBtn.className = 'btn-ghost';
+      undoBtn.textContent = state.history.length
+        ? ('Zpět (' + (state.history[state.history.length-1].pts > 0 ? '+' : '') + state.history[state.history.length-1].pts + ' ' + state.players[state.history[state.history.length-1].idx].name + ')')
+        : 'Zpět';
+      undoBtn.disabled = !state.history.length;
+      undoBtn.addEventListener('click', undo);
+
+      var endBtn = document.createElement('button');
+      endBtn.className = 'btn-ghost danger';
+      endBtn.textContent = 'Ukončit session';
+      endBtn.addEventListener('click', function(){ pendingEnd = true; render(); });
+
+      footer.appendChild(undoBtn);
+      footer.appendChild(endBtn);
+      wrap.appendChild(footer);
+    }
+
+    return wrap;
+  }
+
+  function renderResult(){
+    var wrap = document.createElement('div');
+    wrap.style.display = 'flex';
+    wrap.style.flexDirection = 'column';
+    wrap.style.gap = '20px';
+
+    var head = document.createElement('div');
+    head.innerHTML =
+      '<h2>Výsledek session</h2>' +
+      '<div class="rule-note" style="margin-top:6px">' + escapeHtml(fmtDate(lastResult.startedAt)) + '</div>';
+    wrap.appendChild(head);
+
+    var standings = sortedStandings(lastResult.players);
+    var topScore = standings.length ? standings[0].score : 0;
+
+    var list = document.createElement('div');
+    list.className = 'standings';
+    standings.forEach(function(p, rank){
+      var isWinner = p.score === topScore && topScore > 0;
+      var row = document.createElement('div');
+      row.className = 'standing-row' + (isWinner ? ' winner' : '');
+      row.innerHTML =
+        '<span class="standing-rank">' + (rank+1) + '.</span>' +
+        '<span class="standing-name">' + escapeHtml(p.name) + '</span>' +
+        (isWinner ? '<span class="standing-pill">Vítěz</span>' : '') +
+        '<span class="standing-score">' + p.score + '</span>';
+      list.appendChild(row);
+    });
+    wrap.appendChild(list);
+
+    var newBtn = document.createElement('button');
+    newBtn.className = 'btn-primary';
+    newBtn.textContent = 'Nová session';
+    newBtn.addEventListener('click', function(){ lastResult = null; render(); });
+    wrap.appendChild(newBtn);
+
+    return wrap;
+  }
+
+  // ---------- server polling (no accounts, so no live subscriptions — just poll) ----------
+
+  function refreshState(){
+    return apiGet('/api/state').then(function(res){
+      syncState = 'synced';
+      if(writingState) return; // don't clobber an in-flight local write
+      var remote = res.state || null;
+      if((state && remote && JSON.stringify(state) !== JSON.stringify(remote)) ||
+         (!state && remote) || (state && !remote)){
+        state = remote;
+        if(!lastResult) render();
+      }
+    }).catch(function(e){
+      console.error('prsi: state poll failed', e);
+      syncState = 'offline';
+    });
+  }
+
+  function refreshHistory(){
+    return apiGet('/api/history').then(function(res){
+      syncState = 'synced';
+      var fresh = res.history || [];
+      if(JSON.stringify(fresh) !== JSON.stringify(history)){
+        history = fresh;
+        if(!lastResult) render();
+      }
+    }).catch(function(e){
+      console.error('prsi: history poll failed', e);
+      syncState = 'offline';
+    });
+  }
+
+  function init(){
+    render(); // immediate paint with whatever's local, even before the first fetch lands
+    Promise.all([refreshState(), refreshHistory()]).then(function(){
+      render();
+    });
+    setInterval(function(){
+      refreshState();
+      refreshHistory();
+    }, 4000);
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
